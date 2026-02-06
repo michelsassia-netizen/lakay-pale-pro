@@ -2,110 +2,125 @@ import streamlit as st
 from openai import OpenAI
 from streamlit_mic_recorder import mic_recorder
 import io
-from PIL import Image
+import os
+import base64
 
-# --- PAGE CONFIG ---
+# --- CONFIG ---
 st.set_page_config(page_title="Lakay Pale Pro", page_icon="🇭🇹", layout="wide")
 
-# --- STYLING (Black & Neon) ---
+# --- STYLE (Kamera Kache + Neon) ---
 st.markdown("""
     <style>
-    .stApp { background-color: #050505 !important; color: white !important; }
-    h1 { text-align: center; color: #fff; text-shadow: 0 0 10px #00d2ff, 0 0 20px #ff003c; }
-    .stButton>button { width: 100%; border-radius: 20px; background: linear-gradient(45deg, #00d2ff, #0078ff); color: white; border: none; }
+    .stApp { background-color: #000000 !important; color: white; }
+    
+    /* Header Style */
+    h1 { 
+        text-align: center; 
+        background: -webkit-linear-gradient(#00d2ff, #ff003c);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent; 
+        font-weight: 800;
+        font-size: 3rem;
+    }
+    
+    /* Bwat Sponsor */
+    .sponsor-box {
+        border: 2px dashed #FFD700;
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        background: #111;
+        color: #FFD700;
+        margin-bottom: 20px;
+    }
+
+    /* Kache Kamera a nan yon Tiwa */
+    .stExpander {
+        background-color: #111 !important;
+        border: 1px solid #333 !important;
+        border-radius: 10px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# --- HEADER ---
-st.title("LAKAY PALE")
-st.markdown("<h3 style='text-align: center; color: #888;'>Entèlijans ki Pale Lang Ou</h3>", unsafe_allow_html=True)
-st.divider()
-
-# --- SIDEBAR (API KEY) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.header("⚙️ SISTÈM")
     api_key = st.text_input("Kle API OpenAI", type="password")
     if not api_key:
-        st.warning("⚠️ Mete Kle API ou la pou kòmanse.")
+        st.warning("Mete Kle a pou kòmanse.")
         st.stop()
-
 client = OpenAI(api_key=api_key)
 
-# --- MAIN LAYOUT ---
-col1, col2 = st.columns(2)
+# --- HEADER (LOGOS) ---
+c1, c2, c3 = st.columns([1, 2, 1])
+with c1:
+    if os.path.exists("kreyolaihub.png"): st.image("kreyolaihub.png", width=120)
+    else: st.info("Manque: kreyolaihub.png")
+with c2:
+    st.markdown("<h1>LAKAY PALE</h1>", unsafe_allow_html=True)
+with c3:
+    if os.path.exists("logo.png"): st.image("logo.png", width=120)
+    else: st.info("Manque: logo.png")
 
-# --- COLUMN 1: VOICE (PALE) ---
-with col1:
-    st.info("🎙️ 1. PALE / KREYE")
-    st.write("Peze bouton an epi pale an Kreyòl:")
-    
-    # Microphone input
-    audio_data = mic_recorder(start_prompt="🔴 KÒMANSE PALE", stop_prompt="⬛ BOUT", key="recorder")
+st.divider()
+
+# --- FONKSYON DESEN (DALL-E 3) ---
+def generate_image(prompt):
+    with st.spinner("🎨 M ap kreye logo a... Tann 10 segonn."):
+        try:
+            response = client.images.generate(model="dall-e-3", prompt=prompt, size="1024x1024", quality="standard", n=1)
+            return response.data[0].url
+        except Exception as e:
+            return f"Erè: {str(e)}"
+
+# --- MAIN PAGE (3 KOLÒN) ---
+col_spon, col_pale, col_scan = st.columns([1, 2, 2])
+
+# 1. SPONSOR
+with col_spon:
+    st.markdown('<div class="sponsor-box">ESPACE SPONSOR</div>', unsafe_allow_html=True)
+
+# 2. PALE / KREYE
+with col_pale:
+    st.info("🎙️ PALE (Di: 'Fè yon logo...')")
+    audio_data = mic_recorder(start_prompt="🔴 PALE", stop_prompt="⬛ STOP", key="recorder")
     
     if audio_data:
-        st.audio(audio_data['bytes'])
-        st.success("Odyo resevwa! M ap reflechi...")
-        
-        # Transcribe audio (Whisper)
+        # Transkripsyon
         audio_file = io.BytesIO(audio_data['bytes'])
         audio_file.name = "audio.wav"
         transcript = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
-        
-        user_text = transcript.text
-        st.write(f"🗣️ **Ou di:** {user_text}")
-        
-        # Get AI Response
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "Ou se yon asistan ayisyen entèlijan. Reponn an Kreyòl klè."},
-                {"role": "user", "content": user_text}
-            ]
-        )
-        ai_reply = response.choices[0].message.content
-        st.markdown(f"🤖 **Lakay Pale:** {ai_reply}")
+        text = transcript.text
+        st.write(f"🗣️ **Ou di:** {text}")
 
-# --- COLUMN 2: CAMERA & SCANNER (ESKANÈ) ---
-with col2:
-    st.error("📸 2. ESKANÈ / KAMERA")
+        # DETEKSYON POU FÈ DESEN
+        mots_cles = ["logo", "imaj", "desen", "foto", "image", "créez", "create", "fè"]
+        if any(w in text.lower() for w in mots_cles) and ("logo" in text.lower() or "imaj" in text.lower()):
+            st.success("🎨 OK! M ap desinen sa pou ou kounye a!")
+            img_url = generate_image(text)
+            if "http" in img_url: st.image(img_url)
+            else: st.error(img_url)
+        else:
+            # Pale Nòmal
+            resp = client.chat.completions.create(model="gpt-4o", messages=[{"role":"user", "content":text}])
+            st.write(resp.choices[0].message.content)
+
+# 3. ESKANÈ (KACHE)
+with col_scan:
+    st.error("📸 ESKANÈ")
     
-    # TAB SELECTION: Choose between Camera or Upload
-    tab1, tab2 = st.tabs(["📸 Pran Foto", "📂 Chwazi Fichye"])
+    # MEN REZILTA A: Kamera a kache isit la!
+    with st.expander("📸 Klike la pou wouvri Kamera a"):
+        cam = st.camera_input("Pran foto a")
     
-    image_data = None
+    up = st.file_uploader("Oswa upload yon fichye", type=['jpg','png'])
+    final = cam if cam else up
 
-    with tab1:
-        # THE MISSING CAMERA WIDGET
-        camera_pic = st.camera_input("Pran yon foto dokiman an")
-        if camera_pic:
-            image_data = camera_pic
-
-    with tab2:
-        uploaded_file = st.file_uploader("Depoze foto a la", type=['png', 'jpg', 'jpeg'])
-        if uploaded_file:
-            image_data = uploaded_file
-
-    # Process the image if one exists
-    if image_data:
-        st.image(image_data, caption="Dokiman ou voye a")
-        if st.button("🔍 ANALIZE DOKIMAN AN"):
-            with st.spinner("M ap li dokiman an..."):
-                # Convert image for OpenAI
-                import base64
-                bytes_data = image_data.getvalue()
-                base64_image = base64.b64encode(bytes_data).decode('utf-8')
-
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": "Esplike m sa ki ekri nan dokiman sa a an Kreyòl."},
-                                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                            ],
-                        }
-                    ],
-                    max_tokens=500
-                )
-                st.markdown(response.choices[0].message.content)
+    if final:
+        st.image(final, width=200)
+        if st.button("🔍 ANALIZE"):
+            with st.spinner("M ap gade..."):
+                b64 = base64.b64encode(final.getvalue()).decode()
+                res = client.chat.completions.create(model="gpt-4o", messages=[{"role":"user", "content":[{"type":"text", "text":"Esplike sa."},{"type":"image_url", "image_url":{"url":f"data:image/jpeg;base64,{b64}"}}] }])
+                st.write(res.choices[0].message.content)
