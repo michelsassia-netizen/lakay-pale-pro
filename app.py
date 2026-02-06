@@ -40,6 +40,7 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-shadow: 0px 0px 20px rgba(255, 255, 255, 0.1);
+        margin-bottom: 0px;
     }
 
     /* Haptic Feedback (Vibration) Simulation */
@@ -83,7 +84,7 @@ with st.sidebar:
 
 # --- 4. MAIN UI ---
 st.markdown('<h1 class="glow-title">LAKAY PALE</h1>', unsafe_allow_html=True)
-st.markdown('<p style="text-align:center; color:#888;">Entèlijans ki Pale Lang Ou (Kreyòl)</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align:center; color:#888; margin-bottom:40px;">Entèlijans ki Pale Lang Ou (Kreyòl)</p>', unsafe_allow_html=True)
 
 # 5-Message Limit Progress Bar
 remaining = 5 - st.session_state.msg_count
@@ -97,20 +98,18 @@ if api_key:
     client = OpenAI(api_key=api_key)
     col1, col2 = st.columns(2, gap="large")
 
-    # --- COLUMN 1: VOICE/STUDIO ---
+    # --- COLUMN 1: VOICE/STUDIO (BLUE) ---
     with col1:
         st.markdown('<div class="blue-card"></div>', unsafe_allow_html=True)
         with st.container():
-            st.markdown("<h2 style='color:#00d2ff; text-align:center;'>🎙️ Pale / Kreye</h2>", unsafe_allow_html=True)
+            st.markdown("<h2 style='color:#00d2ff; text-align:center;'>🎙️ 1. Pale / Kreye</h2>", unsafe_allow_html=True)
             if remaining > 0:
                 audio = mic_recorder(start_prompt="🎤 KÒMANSE PALE", stop_prompt="🛑 FINI", key='mic')
                 if audio:
                     with st.spinner("AI ap reflechi..."):
-                        # Whisper Transcription
                         audio_bio = io.BytesIO(audio['bytes']); audio_bio.name = "audio.wav"
                         transcript = client.audio.transcriptions.create(model="whisper-1", file=audio_bio)
                         
-                        # AI Response (gpt-4o-mini for cost saving)
                         res = client.chat.completions.create(
                             model="gpt-4o-mini",
                             messages=[{"role": "system", "content": f"Ou se yon asistan {profile}. Reponn sèlman an kreyòl ayisyen."},
@@ -123,17 +122,16 @@ if api_key:
                         st.success(res.choices[0].message.content)
                         st.markdown('<script>triggerVibrate();</script>', unsafe_allow_html=True)
 
-    # --- COLUMN 2: SCANNER ---
+    # --- COLUMN 2: SCANNER (RED) ---
     with col2:
         st.markdown('<div class="red-card"></div>', unsafe_allow_html=True)
         with st.container():
-            st.markdown("<h2 style='color:#ff003c; text-align:center;'>📄 Eskanè</h2>", unsafe_allow_html=True)
+            st.markdown("<h2 style='color:#ff003c; text-align:center;'>📄 2. Eskanè</h2>", unsafe_allow_html=True)
             if remaining > 0:
                 img_file = st.file_uploader("Voye Foto", type=["jpg", "png"], label_visibility="collapsed")
                 if img_file and st.button("✨ ANALIZE DOKIMAN", use_container_width=True):
                     with st.spinner("M ap li papye a..."):
                         img_b64 = base64.b64encode(img_file.getvalue()).decode()
-                        # Vision Analysis (gpt-4o)
                         res = client.chat.completions.create(
                             model="gpt-4o",
                             messages=[{"role": "user", "content": [
