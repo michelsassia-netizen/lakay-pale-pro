@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lakay Pale — Asistan AI Ayisyen</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:    #00209F;
+    --red:     #D21034;
+    --gold:    #F4A623;
+    --cream:   #F7F3EE;
+    --white:   #FFFFFF;
+    --ink:     #12163A;
+    --ink2:    #4A4D6B;
+    --border:  #E0D8CF;
+    --shadow:  0 2px 16px rgba(18,22,58,0.09);
+    --shadow-lg: 0 8px 40px rgba(18,22,58,0.13);
+    --radius:  18px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+  }
+
+  .flag-stripe {
+    height: 5px;
+    background: linear-gradient(90deg, var(--blue) 50%, var(--red) 50%);
+  }
+
+  nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  }
+
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+  .nav-logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--blue), #1a3bbf);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,32,159,0.3);
+  }
+
+  .nav-logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem; font-weight: 800;
+    color: var(--ink); letter-spacing: -0.02em;
+  }
+
+  .nav-logo-text span { color: var(--blue); }
+
+  .api-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 600; color: var(--ink2);
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .api-badge:hover { border-color: var(--blue); color: var(--blue); }
+  .api-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; }
+  .api-badge .dot.active { background: #22c55e; }
+
+  .settings-panel {
+    display: none; background: var(--white);
+    border-bottom: 1px solid var(--border); padding: 20px 24px;
+  }
+
+  .settings-panel.open { display: block; }
+
+  .settings-inner {
+    max-width: 540px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .settings-label {
+    font-size: 0.8rem; font-weight: 700; color: var(--ink);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  .settings-row { display: flex; gap: 10px; align-items: center; }
+
+  .api-input {
+    flex: 1; background: var(--cream);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 11px 14px; font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem; color: var(--ink); outline: none; transition: border-color 0.2s;
+  }
+
+  .api-input:focus { border-color: var(--blue); }
+
+  .hero {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 44px 24px 36px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+
+  .hero::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.04;
+    background-image:
+      repeating-linear-gradient(45deg, var(--blue) 0, var(--blue) 1px, transparent 0, transparent 50%),
+      repeating-linear-gradient(-45deg, var(--red) 0, var(--red) 1px, transparent 0, transparent 50%);
+    background-size: 24px 24px; pointer-events: none;
+  }
+
+  .hero-flag { font-size: 2rem; margin-bottom: 10px; }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 800; color: var(--ink); letter-spacing: -0.03em; line-height: 1.1;
+  }
+
+  .hero-title .ab { color: var(--blue); }
+  .hero-title .ar { color: var(--red); }
+
+  .hero-sub { margin-top: 10px; font-size: 1rem; color: var(--ink2); font-weight: 500; }
+
+  .hero-pills {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin-top: 18px; flex-wrap: wrap;
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 13px;
+    font-size: 0.78rem; font-weight: 600; color: var(--ink2);
+  }
+
+  main {
+    max-width: 1180px; margin: 0 auto;
+    padding: 32px 20px 60px;
+    display: grid;
+    grid-template-columns: 270px 1fr 270px;
+    gap: 20px; align-items: start;
+  }
+
+  @media (max-width: 1000px) {
+    main { grid-template-columns: 1fr 1.4fr; }
+    .card-sponsor { order: 3; grid-column: span 2; }
+  }
+
+  @media (max-width: 660px) {
+    main { grid-template-columns: 1fr; }
+    .card-sponsor { grid-column: span 1; order: 3; }
+  }
+
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    overflow: hidden; transition: box-shadow 0.25s, transform 0.25s;
+    animation: slideUp 0.5s ease both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.2s; }
+  .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .card-header {
+    padding: 18px 20px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; flex-shrink: 0;
+  }
+
+  .icon-blue { background: rgba(0,32,159,0.08); }
+  .icon-red  { background: rgba(210,16,52,0.08); }
+  .icon-gold { background: rgba(244,166,35,0.12); }
+
+  .card-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
+  .card-desc  { font-size: 0.72rem; color: var(--ink2); margin-top: 2px; font-weight: 500; }
+  .card-body  { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 12px; font-family: 'Nunito', sans-serif;
+    font-weight: 700; font-size: 0.92rem; cursor: pointer;
+    transition: all 0.18s; border: none; padding: 13px 20px;
+    width: 100%; letter-spacing: 0.01em;
+  }
+
+  .btn-blue {
+    background: var(--blue); color: var(--white);
+    box-shadow: 0 3px 12px rgba(0,32,159,0.25);
+  }
+
+  .btn-blue:hover { background: #0a2bc4; box-shadow: 0 5px 20px rgba(0,32,159,0.35); transform: translateY(-1px); }
+  .btn-blue:active { transform: translateY(0); }
+
+  .btn-red {
+    background: var(--red); color: var(--white);
+    box-shadow: 0 3px 12px rgba(210,16,52,0.25);
+  }
+
+  .btn-red:hover { background: #b80f2c; box-shadow: 0 5px 20px rgba(210,16,52,0.35); transform: translateY(-1px); }
+
+  .btn-outline {
+    background: transparent; color: var(--ink);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); background: rgba(0,32,159,0.04); }
+
+  .btn-sm { padding: 9px 16px; font-size: 0.82rem; border-radius: 10px; }
+
+  .mic-wrapper {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px; padding: 8px 0;
+  }
+
+  .mic-btn {
+    width: 80px; height: 80px; border-radius: 50%; border: none;
+    background: var(--blue); color: white; font-size: 1.8rem; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,32,159,0.3);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .mic-btn:hover { transform: scale(1.06); box-shadow: 0 6px 28px rgba(0,32,159,0.4); }
+  .mic-btn:active { transform: scale(0.97); }
+
+  .mic-btn.recording {
+    background: var(--red); box-shadow: 0 4px 20px rgba(210,16,52,0.4);
+    animation: mic-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(210,16,52,0.4); }
+    50% { box-shadow: 0 4px 36px rgba(210,16,52,0.6), 0 0 0 10px rgba(210,16,52,0.08); }
+  }
+
+  .mic-label { font-size: 0.8rem; font-weight: 600; color: var(--ink2); text-align: center; }
+
+  .lang-row { display: flex; gap: 6px; }
+
+  .lang-tab {
+    flex: 1; padding: 8px 4px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: transparent;
+    font-family: 'Nunito', sans-serif; font-size: 0.78rem;
+    font-weight: 700; color: var(--ink2); cursor: pointer;
+    transition: all 0.15s; text-align: center;
+  }
+
+  .lang-tab.active, .lang-tab:hover {
+    border-color: var(--blue); color: var(--blue);
+    background: rgba(0,32,159,0.06);
+  }
+
+  .text-display {
+    background: var(--cream); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px 15px;
+    font-family: 'Nunito', sans-serif; font-size: 0.88rem;
+    line-height: 1.6; color: var(--ink2); min-height: 60px;
+  }
+
+  .response-box {
+    background: rgba(0,32,159,0.04); border: 1.5px solid rgba(0,32,159,0.12);
+    border-radius: 12px; padding: 14px 16px;
+    font-size: 0.9rem; line-height: 1.65; color: var(--ink); min-height: 80px;
+  }
+
+  .response-box.loading {
+    color: var(--ink2);
+    font-style: italic;
+  }
+
+  .response-box.loading::after {
+    content: ' ●●●';
+    animation: blink 1s ease infinite;
+    color: var(--blue);
+    font-style: normal;
+    font-size: 0.7rem;
+  }
+
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  .sec-label {
+    font-size: 0.72rem; font-weight: 700; color: var(--ink2);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .sec-label .bar {
+    display: inline-block; width: 3px; height: 14px; border-radius: 2px;
+  }
+
+  .input-row { display: flex; gap: 8px; }
+
+  .text-input {
+    flex: 1; background: var(--cream); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 11px 14px;
+    font-family: 'Nunito', sans-serif; font-size: 0.88rem;
+    color: var(--ink); outline: none; transition: border-color 0.2s;
+  }
+
+  .text-input:focus { border-color: var(--blue); }
+
+  .send-btn {
+    width: 44px; height: 44px; border-radius: 12px; border: none;
+    background: var(--blue); color: white; font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: #0a2bc4; transform: scale(1.05); }
+
+  .image-zone {
+    background: var(--cream); border: 2px dashed var(--border);
+    border-radius: 12px; padding: 28px 20px; text-align: center; display: none;
+  }
+
+  .image-zone.visible { display: block; }
+  .image-zone-icon { font-size: 2rem; margin-bottom: 6px; }
+  .image-zone-text { font-size: 0.82rem; color: var(--ink2); font-weight: 500; }
+
+  .or-div {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.75rem; color: var(--ink2); font-weight: 600;
+  }
+  .or-line { flex: 1; height: 1px; background: var(--border); }
+
+  .progress { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; display: none; }
+  .progress.visible { display: block; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--blue), #4a6cf7); border-radius: 2px; transition: width 0.3s; }
+  .progress-fill.red { background: linear-gradient(90deg, var(--red), #ff4d6d); }
+
+  /* ── SPONSOR CARD ── */
+  .sponsor-top {
+    background: linear-gradient(135deg, #00209F 0%, #1a3bbf 50%, #D21034 100%);
+    padding: 28px 20px 22px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+
+  .sponsor-top::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.1;
+    background-image: repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%);
+    background-size: 18px 18px;
+  }
+
+  .sponsor-bottle {
+    font-size: 3.2rem; margin-bottom: 8px;
+    animation: float 3s ease-in-out infinite;
+    display: block; position: relative; z-index: 1;
+  }
+
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  .sponsor-name {
+    font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
+    color: white; letter-spacing: 0.15em; position: relative; z-index: 1;
+  }
+
+  .sponsor-sub {
+    font-size: 0.68rem; color: rgba(255,255,255,0.7);
+    letter-spacing: 0.2em; margin-top: 2px; position: relative; z-index: 1;
+  }
+
+  .sponsor-body { padding: 18px 20px; }
+
+  .partner-label {
+    font-size: 0.72rem; font-weight: 700; color: var(--gold);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+
+  .sponsor-desc { font-size: 0.84rem; color: var(--ink2); line-height: 1.55; margin-bottom: 14px; }
+
+  .sponsor-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+
+  .stat-box {
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 8px; text-align: center;
+  }
+
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--blue); }
+  .stat-lbl { font-size: 0.64rem; color: var(--ink2); font-weight: 600; letter-spacing: 0.05em; margin-top: 1px; }
+
+  .reserved-tag {
+    background: linear-gradient(135deg, rgba(0,32,159,0.06), rgba(210,16,52,0.06));
+    border: 1px dashed var(--border); border-radius: 8px;
+    padding: 10px; text-align: center; font-size: 0.74rem; color: var(--ink2); font-weight: 600;
+  }
+
+  /* ── SCANNER ── */
+  .upload-zone {
+    background: var(--cream); border: 2px dashed var(--border);
+    border-radius: 12px; padding: 24px 16px; text-align: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+  }
+
+  .upload-zone:hover { border-color: var(--red); background: rgba(210,16,52,0.02); }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 2rem; margin-bottom: 6px; }
+  .upload-text { font-size: 0.84rem; font-weight: 700; color: var(--ink); }
+  .upload-sub  { font-size: 0.72rem; color: var(--ink2); margin-top: 3px; }
+
+  .preview-wrap {
+    display: none; border-radius: 10px; overflow: hidden;
+    border: 1.5px solid var(--border); position: relative;
+  }
+
+  .preview-wrap.visible { display: block; }
+  .preview-wrap img { width: 100%; height: auto; max-height: 200px; object-fit: contain; display: block; }
+
+  .scan-bar {
+    display: none; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, transparent, var(--red), transparent);
+    animation: scanMove 1.8s linear infinite;
+  }
+
+  @keyframes scanMove { 0% { top: 0; } 100% { top: 100%; } }
+
+  .doc-tabs { display: flex; gap: 6px; }
+
+  .doc-tab {
+    flex: 1; padding: 9px 6px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: transparent;
+    font-family: 'Nunito', sans-serif; font-size: 0.76rem; font-weight: 700;
+    color: var(--ink2); cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+
+  .doc-tab:hover, .doc-tab.active { border-color: var(--red); color: var(--red); background: rgba(210,16,52,0.05); }
+
+  .analysis-box {
+    background: rgba(210,16,52,0.04); border: 1.5px solid rgba(210,16,52,0.15);
+    border-radius: 12px; padding: 14px; font-size: 0.87rem;
+    line-height: 1.65; display: none;
+  }
+
+  .analysis-box.visible { display: block; }
+
+  .analysis-header {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 700; color: var(--red);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
+  }
+
+  .disclaimer { font-size: 0.7rem; color: var(--ink2); opacity: 0.65; line-height: 1.5; text-align: center; }
+
+  .proverb-bar {
+    background: linear-gradient(90deg, var(--blue) 0%, #1440c4 50%, var(--red) 100%);
+    padding: 14px 24px; text-align: center; color: rgba(255,255,255,0.9);
+    font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;
+  }
+
+  .proverb-bar em { color: rgba(255,255,255,0.6); font-style: normal; font-size: 0.75rem; }
+
+  footer {
+    background: var(--white); border-top: 1px solid var(--border);
+    padding: 20px 24px; text-align: center; font-size: 0.78rem; color: var(--ink2); font-weight: 500;
+  }
+
+  footer strong { color: var(--blue); }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--ink); color: white; border-radius: 12px;
+    padding: 12px 22px; font-size: 0.85rem; font-weight: 600;
+    z-index: 9999; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(18,22,58,0.75); backdrop-filter: blur(4px);
+    z-index: 500; align-items: center; justify-content: center; padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--white); border-radius: var(--radius);
+    padding: 24px; width: 100%; max-width: 460px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 16px;
+  }
+
+  #cameraVideo {
+    width: 100%; border-radius: 10px; background: var(--ink);
+    display: block; max-height: 300px; object-fit: cover; border: 1px solid var(--border);
+  }
+
+  .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-btns .btn { flex: 1; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="flag-stripe"></div>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">🏠</div>
+    <span class="nav-logo-text">Lakay <span>Pale</span></span>
+  </a>
+  <div class="api-badge" onclick="toggleSettings()">
+    <div class="dot" id="dotIndicator"></div>
+    <span id="apiLabel">Paramèt API</span>
+  </div>
+</nav>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-inner">
+    <div class="settings-label">🔑 Kle OpenAI API ou</div>
+    <div class="settings-row">
+      <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-proj-..." />
+      <button class="btn btn-sm btn-blue" style="width:auto;padding:11px 18px;" onclick="saveApiKey()">Sovgade</button>
+    </div>
+    <p style="font-size:0.75rem;color:var(--ink2);line-height:1.5;">
+      Kle ou a sovgade lokalement nan navigatè ou. Li janm voye kote eksepte OpenAI dirèkteman.
+    </p>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-flag">🇭🇹</div>
+  <h1 class="hero-title"><span class="ab">Lakay</span> <span class="ar">Pale</span></h1>
+  <p class="hero-sub">Asistan AI ou an Kreyòl — Pale, Kreye, Eskanè</p>
+  <div class="hero-pills">
+    <div class="pill">🎙️ Rekonesans Vwa</div>
+    <div class="pill">🧠 Repons an Kreyòl</div>
+    <div class="pill">📄 Eskanè Dokiman</div>
+    <div class="pill">🌍 FR · EN · KW</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- SPONSOR -->
+  <div class="card card-sponsor">
+    <div class="sponsor-top">
+      <span class="sponsor-bottle">🍺</span>
+      <div class="sponsor-name">PRESTIGE</div>
+      <div class="sponsor-sub">BWASON NASYONAL AYITI</div>
+    </div>
+    <div class="sponsor-body">
+      <div class="partner-label">⭐ Patèn Premye Klas</div>
+      <p class="sponsor-desc">
+        Espace disponib pou yon mak ki vle jwenn kominote ayisyen nan UK ak dyaspora a. Tache ak Lakay Pale.
+      </p>
+      <div class="sponsor-stats">
+        <div class="stat-box"><div class="stat-num">600+</div><div class="stat-lbl">Patisipan</div></div>
+        <div class="stat-box"><div class="stat-num">O2</div><div class="stat-lbl">Arena</div></div>
+        <div class="stat-box"><div class="stat-num">3</div><div class="stat-lbl">Lang</div></div>
+        <div class="stat-box"><div class="stat-num">UK</div><div class="stat-lbl">Baz</div></div>
+      </div>
+      <div class="reserved-tag">
+        Espace Réservé · Kontakte nou<br>
+        <span style="font-size:0.68rem;opacity:0.6;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="36575a574559525f515f42575a765e59425b575f5a1855595b">[email&#160;protected]</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICE / AI -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon icon-blue">🎙️</div>
+      <div>
+        <div class="card-title">Pale / Kreye</div>
+        <div class="card-desc">Pale oswa ekri — AI reponn an Kreyòl</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="mic-wrapper">
+        <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎙️</button>
+        <span class="mic-label" id="micLabel">Klike pou pale</span>
+      </div>
+      <div style="background:rgba(0,32,159,0.04);border:1px solid rgba(0,32,159,0.1);border-radius:10px;padding:10px 12px;font-size:0.72rem;color:var(--ink2);line-height:1.7;">
+        💬 <b>Kesyon:</b> "Kote Ayiti ye?" → repons an Kreyòl<br>
+        🎨 <b>Imaj:</b> "Desine yon fanm ayisyen" → DALL·E jenere
+      </div>
+
+      <div>
+        <div class="sec-label" style="margin-bottom:8px;"><span class="bar" style="background:var(--blue)"></span>Lang ou pale a</div>
+        <div class="lang-row">
+          <button class="lang-tab active" onclick="setLang(this,'fr-FR')">🇫🇷 Français</button>
+          <button class="lang-tab" onclick="setLang(this,'en-US')">🇬🇧 English</button>
+          <button class="lang-tab" onclick="setLang(this,'ht')">🇭🇹 Kreyòl</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label" style="margin-bottom:6px;"><span class="bar" style="background:var(--blue)"></span>Sa ou di a</div>
+        <div class="text-display" id="transcriptDisplay">Pale oswa ekri yon mesaj...</div>
+      </div>
+
+      <div class="or-div"><div class="or-line"></div>oswa ekri<div class="or-line"></div></div>
+
+      <div class="input-row">
+        <input class="text-input" id="textInput" type="text" placeholder="Ekri kesyon ou a isit..."
+          onkeydown="if(event.key==='Enter') processInput('auto')" />
+        <button class="send-btn" onclick="processInput('auto')">→</button>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-blue btn-sm" style="flex:1;" onclick="processInput('question')">🧠 Kesyon</button>
+        <button class="btn btn-outline btn-sm" style="flex:1;" onclick="processInput('image')">🎨 Imaj</button>
+      </div>
+
+      <div class="progress" id="mainProg"><div class="progress-fill" id="mainFill"></div></div>
+
+      <div>
+        <div class="sec-label" style="margin-bottom:6px;"><span class="bar" style="background:var(--blue)"></span>✨ Repons AI an Kreyòl</div>
+        <div class="response-box" id="responseBox">
+          <span style="color:var(--ink2);opacity:0.5;font-style:italic;font-size:0.85rem;">Repons pral parèt isit...</span>
+        </div>
+      </div>
+
+      <div class="image-zone" id="imgPlaceholder">
+        <div class="image-zone-icon">🖼️</div>
+        <div class="image-zone-text">Jenere Imaj AI</div>
+        <p style="font-size:0.72rem;color:var(--ink2);margin-top:4px;">Konekte kle OpenAI pou itilize DALL·E</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCANNER -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon icon-red">📄</div>
+      <div>
+        <div class="card-title">Eskanè Dokiman</div>
+        <div class="card-desc">Analize dokiman an Kreyòl senp</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div>
+        <div class="sec-label" style="margin-bottom:8px;"><span class="bar" style="background:var(--red)"></span>Tip Dokiman</div>
+        <div class="doc-tabs">
+          <button class="doc-tab active" onclick="setDocType(this,'medical')">🏥 Medikal</button>
+          <button class="doc-tab" onclick="setDocType(this,'legal')">⚖️ Legal</button>
+          <button class="doc-tab" onclick="setDocType(this,'official')">📋 Ofisyèl</button>
+        </div>
+      </div>
+
+      <div class="upload-zone">
+        <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="handleFile(event)" />
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">Telechaje Dokiman</div>
+        <div class="upload-sub">Pran foto ak telefòn ou → voye nan Mac → klike isi</div>
+      </div>
+
+      <div class="or-div"><div class="or-line"></div>oswa<div class="or-line"></div></div>
+
+      <button class="btn btn-outline btn-sm" onclick="openCamera()">📸 Ouvri Kamera</button>
+
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" src="" alt="Dokiman" />
+        <div class="scan-bar" id="scanBar"></div>
+      </div>
+
+      <div class="progress" id="scanProg"><div class="progress-fill red" id="scanFill"></div></div>
+
+      <button class="btn btn-red" onclick="analyzeDocument()">🔍 ANALIZ Dokiman an</button>
+
+      <div class="analysis-box" id="analysisBox">
+        <div class="analysis-header">📋 Rezilta Analiz</div>
+        <div id="analysisText"></div>
+      </div>
+
+      <p class="disclaimer">⚠️ Pou enfòmasyon sèlman. Toujou konsilte yon pwofesyonèl.</p>
+
+    </div>
+  </div>
+
+</main>
+
+<div class="proverb-bar">
+  "Pale Kreyòl, Pale Fyète" — <em>Pale lang ou, kenbe kilti ou 🇭🇹</em>
+</div>
+
+<footer>
+  <strong>Lakay Pale</strong> · Kreye pa <strong>ALASODIGITAL</strong> · KreyòlAIHub · London 🇬🇧🇭🇹
+</footer>
+
+<div class="modal-overlay" id="cameraModal">
+  <div class="modal-box">
+    <div class="modal-title">📸 Kamera Dokiman</div>
+    <p style="font-size:0.75rem;color:var(--ink2);margin-bottom:8px;">
+      💡 <strong>Mac:</strong> Vire laptop ou pou vize kamera a sou dokiman an — oswa itilize <strong>"Telechaje Dokiman"</strong> ki pi fasil (pran foto ak telefòn ou, voye nan Mac, epi telechaje li).
+    </p>
+    <video id="cameraVideo" autoplay playsinline muted></video>
+    <div class="modal-btns">
+      <button class="btn btn-red" onclick="capturePhoto()">📷 Pran Foto</button>
+      <button class="btn btn-outline" onclick="closeCamera()">✕ Anile</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="captureCanvas" style="display:none;"></canvas>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+let apiKey = localStorage.getItem('lakay_api_key') || '';
+let recognition = null;
+let isRecording = false;
+let currentLang = 'fr-FR';
+let currentDocType = 'medical';
+let cameraStream = null;
+
+window.onload = () => {
+  if (apiKey) {
+    document.getElementById('apiKeyInput').value = apiKey;
+    document.getElementById('dotIndicator').classList.add('active');
+    document.getElementById('apiLabel').textContent = 'API Konekte ✓';
+  }
+  initSpeech();
+};
+
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { showToast('⚠️ Antre kle API ou a!'); return; }
+  apiKey = val;
+  localStorage.setItem('lakay_api_key', val);
+  document.getElementById('dotIndicator').classList.add('active');
+  document.getElementById('apiLabel').textContent = 'API Konekte ✓';
+  document.getElementById('settingsPanel').classList.remove('open');
+  showToast('✅ Kle API sovgade!');
+}
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('micLabel').textContent = 'Navigatè pa sipòte vwa'; return; }
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onresult = e => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    const el = document.getElementById('transcriptDisplay');
+    el.textContent = t;
+    el.style.color = 'var(--ink)';
+    if (e.results[e.results.length-1].isFinal) {
+      document.getElementById('textInput').value = t;
+    }
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎙️';
+    // Auto-process whatever was said
+    const text = document.getElementById('textInput').value.trim();
+    if (text) {
+      document.getElementById('micLabel').textContent = '✅ Tande! Ap travay...';
+      processInput('auto');
+    } else {
+      document.getElementById('micLabel').textContent = 'Fini — klike pou eseye ankò';
+    }
+  };
+
+  recognition.onerror = e => {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎙️';
+    const msgs = {
+      'not-allowed':  '🔒 Otorize mikwofòn nan navigatè ou!',
+      'no-speech':    '🤫 Mwen pa tande anyen — eseye ankò',
+      'network':      '📡 Erè rezo — tcheke koneksyon ou',
+      'aborted':      'Anile — klike pou eseye ankò',
+      'audio-capture':'🎤 Mikwofòn pa jwenn — tcheke aparèy ou'
+    };
+    document.getElementById('micLabel').textContent = msgs[e.error] || ('Erè: ' + e.error);
+    if (e.error === 'not-allowed') {
+      showToast('🔒 Pèmèt mikwofòn: klike sou 🔒 nan navigatè ou');
+    }
+  };
+}
+
+function toggleRecording() {
+  if (!recognition) { showToast('Navigatè ou pa sipòte rekonesans vwa'); return; }
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    recognition.lang = currentLang;
+    recognition.start();
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('micBtn').textContent = '⏹';
+    document.getElementById('micLabel').textContent = '🔴 Mwen koute... Pale!';
+    const el = document.getElementById('transcriptDisplay');
+    el.textContent = '...';
+    el.style.color = 'var(--ink2)';
+  }
+}
+
+function setLang(el, lang) {
+  document.querySelectorAll('.lang-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentLang = lang;
+  if (recognition) recognition.lang = lang;
+}
+
+async function processInput(mode) {
+  const text = document.getElementById('textInput').value.trim()
+    || document.getElementById('transcriptDisplay').textContent.trim();
+
+  if (!text || text === '...' || text.startsWith('Pale oswa')) {
+    showToast('⚠️ Pale oswa ekri yon bagay dabò!');
+    return;
+  }
+
+  const isImage = mode === 'image' ||
+    (mode === 'auto' && /logo|imaj|image|foto|foto|desine|kreye yon|dessine|create|draw|génère|genere|montre mwen|montre|picture|photo of|generate|make a|pent|tableau|ilustrasyon/i.test(text));
+
+  document.getElementById('imgPlaceholder').classList.remove('visible');
+
+  if (isImage) {
+    if (!apiKey) {
+      showToast('⚠️ Konekte kle OpenAI nan Paramèt API pou jenere imaj!');
+      document.getElementById('imgPlaceholder').classList.add('visible');
+      return;
+    }
+    // Real DALL-E generation
+    const box = document.getElementById('responseBox');
+    const placeholder = document.getElementById('imgPlaceholder');
+    placeholder.classList.add('visible');
+    placeholder.innerHTML = '<div class="image-zone-icon">⏳</div><div class="image-zone-text">Ap jenere imaj... patante!</div>';
+    box.textContent = 'Ap kreye imaj ou a...';
+    showProgress('mainProg', 'mainFill', false, 8000);
+
+    try {
+      const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: text,
+          n: 1,
+          size: '1024x1024'
+        })
+      });
+      const data = await res.json();
+      setFill('mainFill', 100);
+      if (data.data?.[0]?.url) {
+        placeholder.innerHTML = `<img src="${data.data[0].url}" style="width:100%;border-radius:10px;margin-bottom:8px;" alt="Imaj jenere"/><div class="image-zone-text" style="font-size:0.72rem;">Klike dwa sou imaj la pou telechaje</div>`;
+        box.textContent = '✅ Imaj kreye avèk siksè!';
+      } else if (data.error) {
+        placeholder.innerHTML = '<div class="image-zone-icon">❌</div><div class="image-zone-text">' + data.error.message + '</div>';
+        box.textContent = 'Erè DALL·E: ' + data.error.message;
+      }
+    } catch(e) {
+      placeholder.innerHTML = '<div class="image-zone-icon">❌</div><div class="image-zone-text">Erè koneksyon</div>';
+      box.textContent = '📡 Erè koneksyon. Eseye ankò.';
+    }
+    return;
+  }
+
+  const box = document.getElementById('responseBox');
+  box.classList.add('loading');
+  box.textContent = 'Ap reflechi...';
+  showProgress('mainProg', 'mainFill', false, 1800);
+
+  if (apiKey) {
+    await callOpenAI(text, box);
+  } else {
+    await sleep(1400);
+    box.classList.remove('loading');
+    setFill('mainFill', 100);
+    typewriter(box, getDemoResp(text));
+  }
+}
+
+async function callOpenAI(text, box) {
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'Ou se Lakay Pale — asistan AI kominote ayisyen an. RÈG: Tout repons OBLIGATWA an Kreyòl Ayisyen sèlman, kèlkeswa lang itilizatè a pale. Itilize Kreyòl senp ak klè. Ton cho, amikal, ak kiltirel.' },
+          { role: 'user', content: text }
+        ],
+        max_tokens: 400,
+        temperature: 0.7
+      })
+    });
+    const data = await res.json();
+    box.classList.remove('loading');
+    setFill('mainFill', 100);
+    if (data.choices?.[0]) {
+      typewriter(box, data.choices[0].message.content);
+    } else if (data.error) {
+      const errMsgs = {
+        'invalid_api_key': '🔑 Kle API ou pa valid. Tcheke li nan Paramèt.',
+        'insufficient_quota': '💳 Kont OpenAI ou manke kredi.',
+        'rate_limit_exceeded': '⏳ Twò anpil demann. Eseye nan yon minit.',
+        'model_not_found': '⚙️ Modèl pa disponib. Tcheke kle API ou.'
+      };
+      const code = data.error.code || data.error.type || '';
+      box.textContent = errMsgs[code] || ('Erè OpenAI: ' + data.error.message);
+      showToast('❌ ' + (errMsgs[code] || 'Erè API — wè repons pou detay'));
+    } else {
+      box.textContent = 'Repons vid. Eseye ankò.';
+    }
+  } catch(e) {
+    box.classList.remove('loading');
+    box.textContent = '📡 Erè koneksyon. Tcheke entènèt ou epi eseye ankò.';
+  }
+}
+
+function getDemoResp(text) {
+  const t = text.toLowerCase();
+  if (/bonswa|bonjou|hello|hi|alo/i.test(t)) return 'Bonswa zanmi! 🇭🇹 Kijan mwen ka ede ou jodi a? Mwen la pou tout kesyon ou!';
+  if (/sante|malad|doktè|sick|health/i.test(t)) return 'Sante se richès! Si ou pa santi ou byen, ale wè yon doktè. Bwè anpil dlo, manje ase, dòmi 7-8 è. 💪';
+  if (/travay|job|work|emploi/i.test(t)) return 'Pou jwenn travay nan UK: mete CV ou ajou, sèvi ak LinkedIn ak Indeed. Pratike angèlè epi prepare ou pou entèvyou! 💼';
+  if (/ayiti|haiti/i.test(t)) return 'Ayiti se premye repiblik nwa lib nan lemond! 1804, Tousen, Desalin — istwa nou fyè! 🇭🇹✊';
+  if (/konpa|musik|music/i.test(t)) return 'Konpa se nanm nou! Ti Paris, Tabou Combo, T-Vice, BélO — richès mizik ayisyen! KonpaLondon kenbe kilti a vivan nan UK! 🎵';
+  return 'Mèsi pou kesyon ou a! Konekte kle OpenAI nan "Paramèt API" pou repons konplè an Kreyòl. Lakay Pale ap ede ou ak nenpòt sijè! 🇭🇹';
+}
+
+function setDocType(el, type) {
+  document.querySelectorAll('.doc-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentDocType = type;
+}
+
+function handleFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => showPreview(ev.target.result);
+  r.readAsDataURL(f);
+}
+
+function showPreview(src) {
+  document.getElementById('previewImg').src = src;
+  document.getElementById('previewWrap').classList.add('visible');
+  showToast('✅ Dokiman chaje — klike Analiz!');
+}
+
+async function analyzeDocument() {
+  const img = document.getElementById('previewImg');
+  const src = img.getAttribute('src');
+  if (!src || src === '' || src === window.location.href) {
+    showToast('⚠️ Telechaje yon dokiman dabò!');
+    return;
+  }
+
+  const bar = document.getElementById('scanBar');
+  bar.style.display = 'block';
+  showProgress('scanProg', 'scanFill', true, 2800);
+  await sleep(2900);
+  bar.style.display = 'none';
+
+  const box = document.getElementById('analysisBox');
+  const textEl = document.getElementById('analysisText');
+  box.classList.add('visible');
+
+  if (apiKey) {
+    textEl.textContent = 'Ap analize...';
+    const canvas = document.getElementById('captureCanvas');
+    canvas.width = img.naturalWidth || 400;
+    canvas.height = img.naturalHeight || 300;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    const b64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+    await doVision(b64, textEl);
+  } else {
+    textEl.innerHTML = demoDocAnalysis(currentDocType);
+  }
+}
+
+async function doVision(b64, el) {
+  const sys = {
+    medical: 'Analize dokiman medikal sa a epi eksplike li AN KREYÒL SENP pou yon pasyan ordinary ka konprann. Mansyone medikaman, dòz, rekòmandasyon.',
+    legal: 'Rezime dokiman legal sa a AN KREYÒL SENP. Souliye dwa, obligasyon, dat enpòtan.',
+    official: 'Eksplike dokiman ofisyèl sa a AN KREYÒL SENP pou tout moun ka konprann fasil.'
+  };
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: sys[currentDocType] },
+          { role: 'user', content: [
+            { type: 'text', text: 'Analize dokiman sa a.' },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${b64}` } }
+          ]}
+        ],
+        max_tokens: 500
+      })
+    });
+    const data = await res.json();
+    if (data.choices?.[0]?.message?.content) {
+      el.textContent = data.choices[0].message.content;
+    } else if (data.error) {
+      el.textContent = '❌ Erè API: ' + (data.error.message || 'Tcheke kle API ou nan Paramèt.');
+      showToast('❌ Erè API — wè rezilta pou detay');
+    } else {
+      el.textContent = 'Pa kapab analize. Eseye ankò.';
+    }
+  } catch(e) {
+    el.textContent = '📡 Erè koneksyon. Tcheke entènèt ou.';
+  }
+}
+
+function demoDocAnalysis(type) {
+  if (type === 'medical') return `<b>🏥 Dokiman Medikal</b><br><br>
+    Dapre sa mwen wè:<br>
+    • <b>Medikaman:</b> Pran 2 fwa pa jou ak manje.<br>
+    • <b>Dirasyon:</b> 10 jou konplè. Pa sote dòz.<br><br>
+    Konekte API pou analiz reyèl.`;
+  if (type === 'legal') return `<b>⚖️ Dokiman Legal</b><br><br>
+    Pwen enpòtan:<br>
+    • Akò ant de pati oswa plis.<br>
+    • Tcheke dat echeyans ak siyati obligatwa.<br><br>
+    Toujou konsilte yon avoka anvan siyen.`;
+  return `<b>📋 Dokiman Ofisyèl</b><br><br>
+    Li tout seksyon yo avèk swen, ranpli espas obligatwa yo, kenbe yon kopi pou ou menm.<br><br>
+    Konekte API pou analiz reyèl.`;
+}
+
+async function openCamera() {
+  document.getElementById('cameraModal').classList.add('open');
+  const video = document.getElementById('cameraVideo');
+  try {
+    // On Mac there's only a front camera — just request any video
+    cameraStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
+    });
+    video.srcObject = cameraStream;
+    // Force play — fixes black screen on some browsers
+    await video.play();
+  } catch(e) {
+    const msg = e.name === 'NotAllowedError'
+      ? '🔒 Klike "Allow" pou otorize kamera!'
+      : e.name === 'NotFoundError'
+      ? '📷 Pa gen kamera sou aparèy sa a — itilize "Telechaje Dokiman" pito'
+      : '⚠️ Kamera pa disponib: ' + e.message;
+    showToast(msg);
+    closeCamera();
+  }
+}
+
+function closeCamera() {
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  document.getElementById('cameraModal').classList.remove('open');
+}
+
+function capturePhoto() {
+  const v = document.getElementById('cameraVideo');
+  const c = document.getElementById('captureCanvas');
+  c.width = v.videoWidth || 640;
+  c.height = v.videoHeight || 480;
+  c.getContext('2d').drawImage(v, 0, 0);
+  showPreview(c.toDataURL('image/jpeg', 0.9));
+  closeCamera();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showProgress(wId, fId, isRed, dur) {
+  const w = document.getElementById(wId);
+  const f = document.getElementById(fId);
+  w.classList.add('visible'); f.style.width = '0%';
+  const s = performance.now();
+  const step = n => { const p = Math.min((n-s)/dur, 0.9); f.style.width=(p*100)+'%'; if(p<0.9) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+function setFill(id, v) { document.getElementById(id).style.width = v + '%'; }
+
+function typewriter(el, text) {
+  el.textContent = ''; let i = 0;
+  const iv = setInterval(() => { if (i < text.length) el.textContent += text[i++]; else clearInterval(iv); }, 16);
+}
+
+document.getElementById('uploadZone').addEventListener('dragover', e => { e.preventDefault(); });
+document.getElementById('uploadZone').addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if (f) { const r = new FileReader(); r.onload = ev => showPreview(ev.target.result); r.readAsDataURL(f); }
+});
+
+document.getElementById('cameraModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('cameraModal')) closeCamera();
+});
+</script>
+</body>
+</html>
